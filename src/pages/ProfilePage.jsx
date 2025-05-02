@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import authService from '../services/auth.service';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const ProfilePage = () => {
@@ -11,15 +11,26 @@ const ProfilePage = () => {
   const [message, setMessage]         = useState('');
   const [error, setError]             = useState('');
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const loadProfile = async () => {
-      const res = await api.get('/users/me');
-      setUser(res.data);
-      setName(res.data.name);
-      setEmail(res.data.email);
+      try {
+        const res = await api.get('/users/me');
+        const data = res.data;
+        if (!data) {
+          throw new Error('Sessão inválida');
+        }
+        setUser(data);
+        setName(data.name);
+        setEmail(data.email);
+      } catch (err) {
+        console.error('Erro a carregar perfil:', err);
+        navigate('/login', { replace: true });
+      }
     };
     loadProfile();
-  }, []);
+  }, [navigate]);
 
   const handleUpdate = async e => {
     e.preventDefault();
@@ -35,11 +46,13 @@ const ProfilePage = () => {
       const payload = { name, email };
       if (password) payload.password = password;
       const res = await api.patch('/users/me', payload);
-      setUser(res.data);
+      const updated = res.data;
+      setUser(updated);
       setPassword('');
       setConfirmPassword('');
       setMessage('Perfil atualizado!');
     } catch (err) {
+      console.error('Erro ao atualizar perfil:', err);
       setError('Erro ao atualizar o perfil.');
     }
   };

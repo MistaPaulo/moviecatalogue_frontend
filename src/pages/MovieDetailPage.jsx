@@ -14,11 +14,10 @@ const MovieDetailPage = () => {
   const [editingId, setEditingId]     = useState(null);
   const [editText, setEditText]       = useState('');
 
-  // paginação de comentários
   const [commentPage, setCommentPage]             = useState(1);
   const [commentTotalPages, setCommentTotalPages] = useState(1);
 
-  // carrega comentários
+  // carrega comentários paginados
   const loadComments = async (page = 1) => {
     try {
       const res = await api.get(`/movies/${id}/comments`, {
@@ -32,7 +31,6 @@ const MovieDetailPage = () => {
     }
   };
 
-  // carregamento inicial
   useEffect(() => {
     const load = async () => {
       try {
@@ -97,27 +95,28 @@ const MovieDetailPage = () => {
     return <p className="text-center mt-5">Carregando...</p>;
   }
 
-  const PosterBox = ({ src, alt }) => (
-    <div
-      style={{
-        width: '100%',
-        aspectRatio: '10/16',
-        borderRadius: '0.25rem',
-        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.1)',
-        overflow: 'hidden'
-      }}
-    >
-      <img
-        src={src}
-        alt={alt}
-        onError={e => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = '/default-cover.png';
+  // Componente para mostrar poster com fallback inicial
+  const PosterBox = ({ src: initialSrc, alt }) => {
+    const [src, setSrc] = useState(initialSrc || '/default-cover.png');
+    return (
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '10/16',
+          borderRadius: '0.25rem',
+          boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.1)',
+          overflow: 'hidden'
         }}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      />
-    </div>
-  );
+      >
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setSrc('/default-cover.png')}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="container py-4">
