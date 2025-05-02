@@ -14,37 +14,11 @@ const MovieDetailPage = () => {
   const [editingId, setEditingId]     = useState(null);
   const [editText, setEditText]       = useState('');
 
-  // carregamento inicial de filme, recomendações e user
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [ m, recsRes ] = await Promise.all([
-          movieService.fetchMovieById(id),
-          movieService.fetchRecommendations(id),
-        ]);
-        setMovie(m);
-        setRecs(recsRes);
-
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            const me = await api.get('/users/me').then(r => r.data);
-            setCurrentUser(me);
-          } catch {
-            // ignora 401
-          }
-        }
-      } catch (err) {
-        console.error('Erro ao carregar dados do filme:', err);
-      }
-    };
-    load();
-    loadComments(1);
-  }, [id]);
-
   // paginação de comentários
-  const [commentPage, setCommentPage]         = useState(1);
+  const [commentPage, setCommentPage]             = useState(1);
   const [commentTotalPages, setCommentTotalPages] = useState(1);
+
+  // carrega comentários
   const loadComments = async (page = 1) => {
     try {
       const res = await api.get(`/movies/${id}/comments`, {
@@ -57,6 +31,30 @@ const MovieDetailPage = () => {
       console.error('Erro ao carregar comentários:', err);
     }
   };
+
+  // carregamento inicial
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [m, recsRes] = await Promise.all([
+          movieService.fetchMovieById(id),
+          movieService.fetchRecommendations(id),
+        ]);
+        setMovie(m);
+        setRecs(recsRes);
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          const me = await api.get('/users/me').then(r => r.data).catch(() => null);
+          setCurrentUser(me);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar dados do filme:', err);
+      }
+    };
+    load();
+    loadComments(1);
+  }, [id]);
 
   const handleNewComment = comment => {
     loadComments(1);
@@ -109,7 +107,15 @@ const MovieDetailPage = () => {
         overflow: 'hidden'
       }}
     >
-      <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img
+        src={src}
+        alt={alt}
+        onError={e => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = '/default-cover.png';
+        }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
     </div>
   );
 
@@ -135,7 +141,12 @@ const MovieDetailPage = () => {
           <div className="row">
             <div className="col-md-6">
               <ul className="list-unstyled">
-                <li><strong>Lançamento:</strong> {movie.released ? new Date(movie.released).toLocaleDateString() : '-'}</li>
+                <li>
+                  <strong>Lançamento:</strong>{' '}
+                  {movie.released
+                    ? new Date(movie.released).toLocaleDateString()
+                    : '-'}
+                </li>
                 <li><strong>Género:</strong> {movie.genres?.join(', ')}</li>
                 <li><strong>Duração:</strong> {movie.runtime} min</li>
                 <li><strong>Classificação:</strong> {movie.rated}</li>
@@ -161,12 +172,14 @@ const MovieDetailPage = () => {
                 </li>
                 {movie.tomatoes?.viewer?.rating != null && (
                   <li>
-                    <strong>Rotten Tomatoes (Viewer):</strong> {movie.tomatoes.viewer.rating} ({movie.tomatoes.viewer.numReviews} reviews)
+                    <strong>Rotten Tomatoes (Viewer):</strong>{' '}
+                    {movie.tomatoes.viewer.rating} ({movie.tomatoes.viewer.numReviews} reviews)
                   </li>
                 )}
                 {movie.tomatoes?.critic?.rating != null && (
                   <li>
-                    <strong>Rotten Tomatoes (Critic):</strong> {movie.tomatoes.critic.rating} ({movie.tomatoes.critic.numReviews} reviews)
+                    <strong>Rotten Tomatoes (Critic):</strong>{' '}
+                    {movie.tomatoes.critic.rating} ({movie.tomatoes.critic.numReviews} reviews)
                   </li>
                 )}
               </ul>
@@ -182,9 +195,14 @@ const MovieDetailPage = () => {
         <div className="row g-4 mb-5">
           {recs.map(r => (
             <div key={r._id} className="col-6 col-sm-4 col-md-3 col-lg-2">
-              <Link to={`/movies/${r._id}`} className="d-block text-center text-decoration-none text-dark">
+              <Link
+                to={`/movies/${r._id}`}
+                className="d-block text-center text-decoration-none text-dark"
+              >
                 <PosterBox src={r.poster} alt={r.title} />
-                <p className="small mt-2 text-truncate" title={r.title}>{r.title}</p>
+                <p className="small mt-2 text-truncate" title={r.title}>
+                  {r.title}
+                </p>
               </Link>
             </div>
           ))}

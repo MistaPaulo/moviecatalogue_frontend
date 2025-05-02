@@ -9,6 +9,10 @@ const MovieCard = ({ movie }) => (
           <img
             src={movie.poster}
             alt={movie.title}
+            onError={e => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/default-cover.png';
+            }}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
