@@ -44,11 +44,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    window.location.href = '/login';
-  };
-
   if (!user) return <p className="text-center mt-5">Carregando...</p>;
 
   return (
