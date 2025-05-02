@@ -1,8 +1,8 @@
 import api from './api';
 
-const fetchComments = (movieId, page = 1, limit = 10) =>
+const fetchComments = (movieId, page = 1) =>
   api
-    .get(`/movies/${movieId}/comments`, { params: { page, limit } })
+    .get(`/movies/${movieId}/comments`, { params: { page } })
     .then(res => res.data);
 
 const postComment = (movieId, text) =>

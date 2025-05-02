@@ -17,15 +17,12 @@ const MovieDetailPage = () => {
   const [commentPage, setCommentPage]             = useState(1);
   const [commentTotalPages, setCommentTotalPages] = useState(1);
 
-  // carrega comentários paginados
   const loadComments = async (page = 1) => {
     try {
-      const res = await api.get(`/movies/${id}/comments`, {
-        params: { page, limit: 10 }
-      });
-      setComments(res.data.comments);
-      setCommentPage(res.data.page);
-      setCommentTotalPages(res.data.totalPages);
+      const { comments, page: p, totalPages } = await commentService.fetchComments(id, page);
+      setComments(comments);
+      setCommentPage(p);
+      setCommentTotalPages(totalPages);
     } catch (err) {
       console.error('Erro ao carregar comentários:', err);
     }

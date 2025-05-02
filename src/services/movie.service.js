@@ -2,7 +2,7 @@ import api from './api';
 
 const fetchMovies = params =>
   api
-    .get('/movies', { params: { limit: 12, ...params } })
+    .get('/movies', { params })
     .then(res => res.data);
 
 const fetchMovieById = id =>
