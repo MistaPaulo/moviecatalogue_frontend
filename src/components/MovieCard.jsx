@@ -25,7 +25,7 @@ const MovieCard = ({ movie }) => {
             </p>
             <p className="card-text">
               {movie.imdb?.rating != null
-                ? `IMDb ${movie.imdb.rating.toFixed(1)}`
+                ? `IMDb ${movie.imdb.rating.toFixed(1)}⭐`
                 : 'IMDb —'}
             </p>
           </div>
